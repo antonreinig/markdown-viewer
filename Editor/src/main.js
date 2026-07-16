@@ -50,8 +50,10 @@ const editor = new Editor({
     },
   },
   onCreate() {
-    post('ready')
-    updateSelectionState()
+    queueMicrotask(() => {
+      post('ready')
+      updateSelectionState()
+    })
   },
   onUpdate({ editor: updatedEditor }) {
     if (!applyingHostUpdate) {
@@ -114,7 +116,7 @@ const commands = {
 window.editorBridge = {
   loadMarkdown(markdown) {
     const incoming = typeof markdown === 'string' ? markdown : ''
-    if (incoming === editor.getMarkdown()) return
+    if (incoming === editor.getMarkdown()) return editor.getMarkdown()
     applyingHostUpdate = true
     try {
       editor.commands.setContent(incoming, { contentType: 'markdown', emitUpdate: false })
@@ -122,6 +124,7 @@ window.editorBridge = {
       applyingHostUpdate = false
       updateSelectionState()
     }
+    return editor.getMarkdown()
   },
   perform(name, payload = {}) {
     return commands[name]?.(payload) ?? false
@@ -130,4 +133,3 @@ window.editorBridge = {
     return editor.getMarkdown()
   },
 }
-

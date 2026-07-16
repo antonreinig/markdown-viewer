@@ -42,9 +42,10 @@ Run all automated checks with:
 
 The macOS shell is SwiftUI/AppKit. A local `WKWebView` hosts the open-source Tiptap/ProseMirror editing engine. Swift owns filesystem access, workspace observation, atomic persistence, conflicts, native commands, and Quick Look. JavaScript assets are compiled into the app and no remote content is loaded.
 
+The Developer ID build uses Hardened Runtime without App Sandbox so it can behave like a repository-oriented IDE. The Quick Look extension remains sandboxed. Runtime networking is disabled by the editor's Content Security Policy and the app contains no network client code.
+
 See [docs/architecture.md](docs/architecture.md) for details.
 
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE).
-

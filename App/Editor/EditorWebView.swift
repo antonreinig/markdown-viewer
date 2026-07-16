@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 import SwiftUI
 import WebKit
 
@@ -11,6 +12,18 @@ struct EditorWebView: NSViewRepresentable {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        configuration.userContentController.addUserScript(WKUserScript(
+            source: """
+            window.addEventListener('error', event => {
+              window.webkit.messageHandlers.editorError.postMessage({ message: event.message || 'Unknown JavaScript error' })
+            })
+            window.addEventListener('unhandledrejection', event => {
+              window.webkit.messageHandlers.editorError.postMessage({ message: String(event.reason || 'Unhandled JavaScript rejection') })
+            })
+            """,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
         for name in Coordinator.messageNames {
             configuration.userContentController.add(context.coordinator, name: name)
         }
@@ -43,7 +56,8 @@ struct EditorWebView: NSViewRepresentable {
 
     @MainActor
     final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
-        static let messageNames = ["ready", "documentChanged", "selectionChanged", "openLink"]
+        static let messageNames = ["ready", "documentChanged", "selectionChanged", "openLink", "editorError"]
+        private let logger = Logger(subsystem: "com.antonreinig.MarkdownViewer", category: "EditorBridge")
         weak var webView: WKWebView?
         var session: DocumentSession
         private var isReady = false
@@ -71,8 +85,32 @@ struct EditorWebView: NSViewRepresentable {
         func loadMarkdownIfReady(_ markdown: String) {
             guard isReady, markdown != lastLoadedMarkdown else { return }
             guard let argument = Self.javaScriptArgument(markdown) else { return }
-            lastLoadedMarkdown = markdown
-            webView?.evaluateJavaScript("window.editorBridge.loadMarkdown(\(argument))")
+            webView?.evaluateJavaScript("window.editorBridge.loadMarkdown(\(argument))") { [weak self] result, error in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    if let confirmed = result as? String,
+                       markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || !confirmed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        self.lastLoadedMarkdown = markdown
+                        self.logger.info("Editor confirmed document load (source: \(markdown.count), serialized: \(confirmed.count) characters)")
+                    } else {
+                        if let error { self.logger.error("Editor load failed: \(error.localizedDescription, privacy: .public)") }
+                        try? await Task.sleep(for: .milliseconds(50))
+                        guard self.lastLoadedMarkdown != markdown else { return }
+                        self.webView?.evaluateJavaScript("window.editorBridge.loadMarkdown(\(argument))") { retryResult, retryError in
+                            if let confirmed = retryResult as? String,
+                               markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                || !confirmed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                self.lastLoadedMarkdown = markdown
+                                self.logger.info("Editor confirmed document load after retry (serialized: \(confirmed.count) characters)")
+                            } else {
+                                self.logger.error("Editor did not confirm document load: \(retryError?.localizedDescription ?? "empty result", privacy: .public)")
+                                self.session.errorMessage = "The editor could not display this Markdown document."
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -90,9 +128,28 @@ struct EditorWebView: NSViewRepresentable {
                       let url = URL(string: value),
                       ["http", "https", "mailto"].contains(url.scheme?.lowercased() ?? "") else { return }
                 NSWorkspace.shared.open(url)
+            case "editorError":
+                let body = message.body as? [String: Any]
+                let details = body?["message"] as? String ?? "Unknown JavaScript error"
+                logger.error("Editor JavaScript error: \(details, privacy: .public)")
+                session.errorMessage = "The editor failed to start: \(details)"
             default:
                 break
             }
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            logger.info("Editor page finished loading")
+        }
+
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
+            logger.error("Editor navigation failed: \(error.localizedDescription, privacy: .public)")
+            session.errorMessage = "The editor page could not be loaded: \(error.localizedDescription)"
+        }
+
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error) {
+            logger.error("Editor provisional navigation failed: \(error.localizedDescription, privacy: .public)")
+            session.errorMessage = "The editor page could not be loaded: \(error.localizedDescription)"
         }
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
