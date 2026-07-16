@@ -1,0 +1,11 @@
+.DS_Store
+.build/
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+Editor/node_modules/
+App/Resources/Editor/
+work/
+*.dmg
+*.xcarchive

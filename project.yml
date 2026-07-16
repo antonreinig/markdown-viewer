@@ -1,0 +1,75 @@
+name: MarkdownViewer
+options:
+  bundleIdPrefix: com.antonreinig
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: NO
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 9SLF673VW4
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.1.0
+    DEAD_CODE_STRIPPING: YES
+packages:
+  Markdown:
+    url: https://github.com/swiftlang/swift-markdown.git
+    from: 0.8.0
+targets:
+  MarkdownViewer:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+        excludes:
+          - Resources/Editor
+    resources:
+      - path: App/Resources/Editor
+        type: folder
+    dependencies:
+      - target: MarkdownQuickLook
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.antonreinig.MarkdownViewer
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/MarkdownViewer.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        GENERATE_INFOPLIST_FILE: NO
+    scheme:
+      testTargets:
+        - MarkdownViewerTests
+      gatherCoverageData: true
+  MarkdownQuickLook:
+    type: app-extension
+    platform: macOS
+    sources:
+      - QuickLook
+    dependencies:
+      - package: Markdown
+        product: Markdown
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.antonreinig.MarkdownViewer.QuickLook
+        PRODUCT_NAME: Markdown Viewer Quick Look
+        INFOPLIST_FILE: QuickLook/Info.plist
+        CODE_SIGN_ENTITLEMENTS: QuickLook/QuickLook.entitlements
+        SKIP_INSTALL: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        GENERATE_INFOPLIST_FILE: NO
+  MarkdownViewerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/MarkdownViewerTests
+    dependencies:
+      - target: MarkdownViewer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.antonreinig.MarkdownViewerTests
+        GENERATE_INFOPLIST_FILE: YES

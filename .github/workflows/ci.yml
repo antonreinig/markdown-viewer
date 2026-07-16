@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Editor/package-lock.json
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Bootstrap
+        run: ./scripts/bootstrap.sh
+      - name: Editor tests
+        working-directory: Editor
+        run: npm test
+      - name: Swift tests
+        run: xcodebuild test -project MarkdownViewer.xcodeproj -scheme MarkdownViewer -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO
+
