@@ -12,6 +12,7 @@ struct DocumentConflict: Identifiable, Sendable {
 final class DocumentSession: ObservableObject, Identifiable {
     let id = UUID()
     @Published private(set) var url: URL
+    let workspaceRootURL: URL
     @Published private(set) var content: String
     @Published var conflict: DocumentConflict?
     @Published var errorMessage: String?
@@ -26,14 +27,19 @@ final class DocumentSession: ObservableObject, Identifiable {
     private let fileManager: FileManager
     private let onURLChanged: (URL) -> Void
 
-    init(url: URL, fileManager: FileManager = .default, onURLChanged: @escaping (URL) -> Void = { _ in }) throws {
+    init(
+        url: URL,
+        workspaceRootURL: URL? = nil,
+        fileManager: FileManager = .default,
+        onURLChanged: @escaping (URL) -> Void = { _ in }
+    ) throws {
         self.url = url
+        self.workspaceRootURL = (workspaceRootURL ?? url.deletingLastPathComponent())
+            .standardizedFileURL
+            .resolvingSymlinksInPath()
         self.fileManager = fileManager
         self.onURLChanged = onURLChanged
-        let data = try Data(contentsOf: url)
-        guard let markdown = String(data: data, encoding: .utf8) else {
-            throw CocoaError(.fileReadInapplicableStringEncoding)
-        }
+        let markdown = try MarkdownFileReader.read(from: url)
         content = markdown
         baseContent = markdown
         startPresenting(url)
@@ -159,10 +165,7 @@ final class DocumentSession: ObservableObject, Identifiable {
     func reloadFromDiskIfChanged() {
         guard fileManager.fileExists(atPath: url.path) else { return }
         do {
-            let data = try Data(contentsOf: url)
-            guard let external = String(data: data, encoding: .utf8) else {
-                throw CocoaError(.fileReadInapplicableStringEncoding)
-            }
+            let external = try MarkdownFileReader.read(from: url)
             guard external != baseContent else { return }
 
             switch MergeEngine.merge(base: baseContent, local: content, remote: external) {

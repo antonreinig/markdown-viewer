@@ -49,7 +49,6 @@ const editor = new Editor({
       if (anchor) {
         event.preventDefault()
         linkPopover?.show(anchor)
-        post('openLink', { url: anchor.getAttribute('href') || '' })
         return true
       }
       return false

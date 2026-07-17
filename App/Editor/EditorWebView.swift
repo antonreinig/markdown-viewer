@@ -199,25 +199,19 @@ struct EditorWebView: NSViewRepresentable {
         }
 
         private func openLink(_ value: String) {
-            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { return }
+            guard let destination = EditorLinkResolver.resolve(
+                value,
+                documentURL: session.url,
+                workspaceRootURL: session.workspaceRootURL
+            ) else { return }
 
-            if trimmed.hasPrefix("#") {
-                guard let fragment = String(trimmed.dropFirst()).removingPercentEncoding,
-                      let argument = Self.javaScriptArgument(fragment) else { return }
+            switch destination {
+            case .anchor(let fragment):
+                guard let argument = Self.javaScriptArgument(fragment) else { return }
                 webView?.evaluateJavaScript("document.getElementById(\(argument))?.scrollIntoView({ behavior: 'smooth', block: 'start' })")
-                return
-            }
-
-            if let url = URL(string: trimmed), let scheme = url.scheme?.lowercased() {
-                guard ["http", "https", "mailto", "file"].contains(scheme) else { return }
+            case .external(let url), .localFile(let url):
                 NSWorkspace.shared.open(url)
-                return
             }
-
-            let base = session.url.deletingLastPathComponent()
-            let resolved = URL(fileURLWithPath: trimmed.removingPercentEncoding ?? trimmed, relativeTo: base).standardizedFileURL
-            NSWorkspace.shared.open(resolved)
         }
 
         @objc private func receiveEditorCommand(_ notification: Notification) {

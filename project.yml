@@ -13,8 +13,8 @@ settings:
     ONLY_ACTIVE_ARCH: NO
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: 8DTMQ4N2LA
-    CURRENT_PROJECT_VERSION: 3
-    MARKETING_VERSION: 0.1.1
+    CURRENT_PROJECT_VERSION: 4
+    MARKETING_VERSION: 0.1.2
     DEAD_CODE_STRIPPING: YES
 packages:
   Markdown:
@@ -31,6 +31,7 @@ targets:
       - path: App
         excludes:
           - Resources
+      - path: Shared/MarkdownFileReader.swift
       - path: BundledEditor/index.html
         buildPhase: resources
       - path: BundledEditor/assets
@@ -50,6 +51,7 @@ targets:
         PRODUCT_MODULE_NAME: PaperMD
         INFOPLIST_FILE: App/Info.plist
         CODE_SIGN_ENTITLEMENTS: App/PaperMD.entitlements
+        ENABLE_APP_SANDBOX: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_HARDENED_RUNTIME: YES
         GENERATE_INFOPLIST_FILE: NO
@@ -62,6 +64,7 @@ targets:
     platform: macOS
     sources:
       - QuickLook
+      - path: Shared/MarkdownFileReader.swift
     dependencies:
       - package: Markdown
         product: Markdown
@@ -80,6 +83,7 @@ targets:
     platform: macOS
     sources:
       - QuickLookThumbnail
+      - path: Shared/MarkdownFileReader.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.antonreinig.PaperMD.Thumbnail

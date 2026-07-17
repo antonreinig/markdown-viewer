@@ -11,11 +11,20 @@ struct WorkspaceItem: Identifiable, Hashable, Sendable {
     static let markdownExtensions: Set<String> = ["md", "markdown", "mdown"]
 
     static func scan(root: URL, fileManager: FileManager = .default) throws -> [WorkspaceItem] {
-        try scanDirectory(root, fileManager: fileManager)
+        let canonicalRoot = root.standardizedFileURL.resolvingSymlinksInPath()
+        return try scanDirectory(canonicalRoot, root: canonicalRoot, fileManager: fileManager)
     }
 
-    private static func scanDirectory(_ directory: URL, fileManager: FileManager) throws -> [WorkspaceItem] {
-        let keys: Set<URLResourceKey> = [.isDirectoryKey, .isHiddenKey, .nameKey]
+    static func contains(_ candidate: URL, in root: URL) -> Bool {
+        let canonicalRoot = root.standardizedFileURL.resolvingSymlinksInPath()
+        let canonicalCandidate = candidate.standardizedFileURL.resolvingSymlinksInPath()
+        if canonicalRoot.path == "/" { return canonicalCandidate.path.hasPrefix("/") }
+        return canonicalCandidate == canonicalRoot
+            || canonicalCandidate.path.hasPrefix(canonicalRoot.path + "/")
+    }
+
+    private static func scanDirectory(_ directory: URL, root: URL, fileManager: FileManager) throws -> [WorkspaceItem] {
+        let keys: Set<URLResourceKey> = [.isDirectoryKey, .isHiddenKey, .isSymbolicLinkKey, .nameKey]
         let urls = try fileManager.contentsOfDirectory(
             at: directory,
             includingPropertiesForKeys: Array(keys),
@@ -25,9 +34,14 @@ struct WorkspaceItem: Identifiable, Hashable, Sendable {
         return try urls.compactMap { url in
             let values = try url.resourceValues(forKeys: keys)
             let name = values.name ?? url.lastPathComponent
-            if values.isHidden == true || ignoredDirectoryNames.contains(name) { return nil }
+            if values.isHidden == true
+                || values.isSymbolicLink == true
+                || ignoredDirectoryNames.contains(name)
+                || !contains(url, in: root) {
+                return nil
+            }
             if values.isDirectory == true {
-                let children = try scanDirectory(url, fileManager: fileManager)
+                let children = try scanDirectory(url, root: root, fileManager: fileManager)
                 guard !children.isEmpty else { return nil }
                 return WorkspaceItem(url: url, isDirectory: true, children: children)
             }
@@ -44,4 +58,3 @@ struct WorkspaceItem: Identifiable, Hashable, Sendable {
         ".git", ".build", "DerivedData", "node_modules", "Pods"
     ]
 }
-

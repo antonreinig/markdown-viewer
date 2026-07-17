@@ -11,6 +11,7 @@ final class BundleResourceTests: XCTestCase {
             Bundle.main.object(forInfoDictionaryKey: "SUPublicEDKey") as? String,
             "rU+HfNnTmiFeu/hQ97GzjSR9pBUjjujgGhPV6dnRUmc="
         )
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "SUEnableInstallerLauncherService") as? Bool, true)
     }
 
     func testSparkleLicenseNoticeIsBundled() throws {
@@ -37,6 +38,13 @@ final class BundleResourceTests: XCTestCase {
             .appendingPathComponent("assets")
             .appendingPathComponent(String(html[filenameRange]))
         XCTAssertTrue(FileManager.default.fileExists(atPath: script.path))
+    }
+
+    func testEditorSourceMapsAreNotBundled() throws {
+        let indexURL = try XCTUnwrap(Bundle.main.url(forResource: "index", withExtension: "html"))
+        let assetsURL = indexURL.deletingLastPathComponent().appendingPathComponent("assets")
+        let assets = try FileManager.default.contentsOfDirectory(at: assetsURL, includingPropertiesForKeys: nil)
+        XCTAssertFalse(assets.contains { $0.pathExtension == "map" })
     }
 
     func testQuickLookExtensionIsBundledAndRegisteredForMarkdown() throws {
