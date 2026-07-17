@@ -7,10 +7,7 @@ final class ThumbnailProvider: QLThumbnailProvider {
         _ handler: @escaping (QLThumbnailReply?, (any Error)?) -> Void
     ) {
         do {
-            let data = try Data(contentsOf: request.fileURL)
-            guard let markdown = String(data: data, encoding: .utf8) else {
-                throw CocoaError(.fileReadInapplicableStringEncoding)
-            }
+            let markdown = try MarkdownFileReader.read(from: request.fileURL)
             let preview = MarkdownThumbnailPreview(markdown: markdown, filename: request.fileURL.lastPathComponent)
             let size = thumbnailSize(fitting: request.maximumSize)
             let reply = QLThumbnailReply(contextSize: size) { context in

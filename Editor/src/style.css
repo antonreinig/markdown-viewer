@@ -45,6 +45,8 @@ body { overflow-y: auto; }
 .document ul, .document ol { padding-left: 1.7em; }
 .document ul[data-type="taskList"] { list-style: none; padding-left: 0; }
 .document ul[data-type="taskList"] li { align-items: flex-start; display: flex; gap: .55em; }
+.document ul[data-type="taskList"] li > label { align-items: center; display: flex; flex: 0 0 auto; height: 1.58em; margin-top: .62em; }
+.document ul[data-type="taskList"] li > label input { margin: 0; }
 .document ul[data-type="taskList"] li > div { flex: 1; }
 .document table { border-collapse: collapse; margin: 1.25em 0; table-layout: fixed; width: 100%; }
 .document th, .document td { border: 1px solid var(--border); min-width: 90px; padding: 8px 10px; position: relative; vertical-align: top; }

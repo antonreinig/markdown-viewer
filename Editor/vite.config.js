@@ -14,7 +14,7 @@ export default defineConfig({
   build: {
     outDir: resolve(import.meta.dirname, '../BundledEditor'),
     emptyOutDir: true,
-    sourcemap: true,
+    sourcemap: false,
     target: 'safari17',
   },
 })

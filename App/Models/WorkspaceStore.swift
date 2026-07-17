@@ -14,6 +14,7 @@ final class WorkspaceStore: ObservableObject {
     private var directoryMonitor: DirectoryMonitor?
     private var refreshTask: Task<Void, Never>?
     private var securityScopedURL: URL?
+    private var singleFileURL: URL?
     private var documentScrollPositions: [URL: CGFloat] = [:]
     private let bookmarkKey: String
 
@@ -59,7 +60,11 @@ final class WorkspaceStore: ObservableObject {
                 relativeTo: nil,
                 bookmarkDataIsStale: &stale
             )
-            openWorkspace(url)
+            if (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
+                openWorkspace(url)
+            } else {
+                openDocument(url)
+            }
             if stale { persistBookmark(url) }
         } catch {
             UserDefaults.standard.removeObject(forKey: bookmarkKey)
@@ -68,7 +73,9 @@ final class WorkspaceStore: ObservableObject {
 
     func openDocument(_ url: URL) {
         let documentURL = normalizedFileURL(url)
-        if let rootURL, documentURL.path.hasPrefix(normalizedFileURL(rootURL).path + "/") {
+        if singleFileURL == nil,
+           let rootURL,
+           documentURL.path.hasPrefix(normalizedFileURL(rootURL).path + "/") {
             select(documentURL)
             return
         }
@@ -84,13 +91,23 @@ final class WorkspaceStore: ObservableObject {
            (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
             return
         }
+        if let url, let rootURL, !WorkspaceItem.contains(url, in: rootURL) {
+            errorMessage = "The selected file is outside the open workspace."
+            return
+        }
         session?.flush()
         selectedFile = url
         guard let url else { session = nil; return }
         do {
-            session = try DocumentSession(url: url) { [weak self] movedURL in
-                self?.selectedFile = movedURL
-                self?.scheduleRefresh()
+            session = try DocumentSession(url: url, workspaceRootURL: rootURL) { [weak self] movedURL in
+                guard let self else { return }
+                self.selectedFile = movedURL
+                if self.singleFileURL != nil {
+                    self.singleFileURL = self.normalizedFileURL(movedURL)
+                    self.rootURL = self.singleFileURL?.deletingLastPathComponent()
+                    self.persistBookmark(movedURL)
+                }
+                self.scheduleRefresh()
             }
         } catch {
             session = nil
@@ -115,17 +132,25 @@ final class WorkspaceStore: ObservableObject {
         panel.nameFieldStringValue = "Untitled.md"
         panel.allowedContentTypes = [UTType(filenameExtension: "md") ?? .plainText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
+        guard WorkspaceItem.contains(url, in: rootURL) else {
+            errorMessage = "New files must be created inside the open workspace."
+            return
+        }
         do {
             try Data("# Untitled\n\n".utf8).write(to: url, options: .withoutOverwriting)
-            refreshWorkspace()
-            select(url)
+            if singleFileURL == nil {
+                refreshWorkspace()
+                select(url)
+            } else {
+                openDocument(url)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
     func createFolder() {
-        guard let rootURL else { return }
+        guard let rootURL, singleFileURL == nil else { return }
         let alert = NSAlert()
         alert.messageText = "New Folder"
         alert.addButton(withTitle: "Create")
@@ -133,7 +158,8 @@ final class WorkspaceStore: ObservableObject {
         let field = NSTextField(string: "New Folder")
         field.frame.size = NSSize(width: 320, height: 24)
         alert.accessoryView = field
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        guard alert.runModal() == .alertFirstButtonReturn,
+              isSafeItemName(field.stringValue) else { return }
         let parent = selectedFile?.deletingLastPathComponent() ?? rootURL
         do {
             try FileManager.default.createDirectory(at: parent.appendingPathComponent(field.stringValue), withIntermediateDirectories: false)
@@ -150,12 +176,16 @@ final class WorkspaceStore: ObservableObject {
         field.frame.size = NSSize(width: 320, height: 24)
         alert.accessoryView = field
         guard alert.runModal() == .alertFirstButtonReturn,
-              !field.stringValue.isEmpty,
-              !field.stringValue.contains("/") else { return }
+              isSafeItemName(field.stringValue) else { return }
         let destination = item.url.deletingLastPathComponent().appendingPathComponent(field.stringValue)
         do {
             session?.flush()
             try FileManager.default.moveItem(at: item.url, to: destination)
+            if singleFileURL != nil {
+                singleFileURL = normalizedFileURL(destination)
+                rootURL = singleFileURL?.deletingLastPathComponent()
+                persistBookmark(destination)
+            }
             if selectedFile == item.url { select(destination) }
             refreshWorkspace()
         } catch { errorMessage = error.localizedDescription }
@@ -168,14 +198,23 @@ final class WorkspaceStore: ObservableObject {
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         do {
+            let wasSingleFile = singleFileURL != nil
             if selectedFile == item.url { select(nil) }
             try FileManager.default.trashItem(at: item.url, resultingItemURL: nil)
-            refreshWorkspace()
+            if wasSingleFile { closeWorkspace() } else { refreshWorkspace() }
         } catch { errorMessage = error.localizedDescription }
     }
 
     func refreshWorkspace() {
         guard let rootURL else { return }
+        if let singleFileURL {
+            if FileManager.default.fileExists(atPath: singleFileURL.path) {
+                items = [WorkspaceItem(url: singleFileURL, isDirectory: false, children: nil)]
+            } else {
+                items = []
+            }
+            return
+        }
         do {
             items = try WorkspaceItem.scan(root: rootURL)
             let directories = [rootURL] + collectDirectories(items)
@@ -218,14 +257,18 @@ final class WorkspaceStore: ObservableObject {
         refreshTask = nil
         stopSecurityScope()
 
+        let scopedResourceIsDirectory = (try? securityScopedResource.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+        singleFileURL = scopedResourceIsDirectory ? nil : normalizedFileURL(securityScopedResource)
         if securityScopedResource.startAccessingSecurityScopedResource() {
             securityScopedURL = securityScopedResource
         }
         let workspaceURL = normalizedFileURL(url)
         rootURL = workspaceURL
-        persistBookmark(workspaceURL)
-        directoryMonitor = DirectoryMonitor { [weak self] in
-            Task { @MainActor [weak self] in self?.scheduleRefresh() }
+        persistBookmark(securityScopedResource)
+        if singleFileURL == nil {
+            directoryMonitor = DirectoryMonitor { [weak self] in
+                Task { @MainActor [weak self] in self?.scheduleRefresh() }
+            }
         }
         refreshWorkspace()
         if let selectedURL { select(selectedURL) }
@@ -235,9 +278,14 @@ final class WorkspaceStore: ObservableObject {
         url.standardizedFileURL.resolvingSymlinksInPath()
     }
 
+    private func isSafeItemName(_ name: String) -> Bool {
+        !name.isEmpty && name != "." && name != ".." && !name.contains("/")
+    }
+
     private func stopSecurityScope() {
         securityScopedURL?.stopAccessingSecurityScopedResource()
         securityScopedURL = nil
+        singleFileURL = nil
         directoryMonitor?.stop()
         directoryMonitor = nil
     }

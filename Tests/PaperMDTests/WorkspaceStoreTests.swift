@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class WorkspaceStoreTests: XCTestCase {
-    func testOpeningDocumentLoadsMarkdownFilesFromItsFolder() throws {
+    func testOpeningDocumentCreatesARestrictedSingleFileWorkspace() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -20,7 +20,7 @@ final class WorkspaceStoreTests: XCTestCase {
 
         XCTAssertEqual(workspace.rootURL?.resolvingSymlinksInPath().path, directory.resolvingSymlinksInPath().path)
         XCTAssertEqual(workspace.selectedFile?.resolvingSymlinksInPath().path, openedFile.resolvingSymlinksInPath().path)
-        XCTAssertEqual(workspace.items.map(\.name), ["First.md", "Second.markdown"])
+        XCTAssertEqual(workspace.items.map(\.name), ["First.md"])
     }
 
     func testClosingWorkspaceClearsFolderAndDocument() throws {

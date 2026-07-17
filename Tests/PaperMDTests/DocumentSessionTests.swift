@@ -69,6 +69,22 @@ final class DocumentSessionTests: XCTestCase {
         XCTAssertEqual(session.conflict?.external, "external")
     }
 
+    func testOversizedDocumentIsRejectedWithoutLoadingIt() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let file = directory.appendingPathComponent("large.md")
+        XCTAssertTrue(FileManager.default.createFile(atPath: file.path, contents: nil))
+        let handle = try FileHandle(forWritingTo: file)
+        try handle.truncate(atOffset: UInt64(MarkdownFileReader.maximumByteCount + 1))
+        try handle.close()
+
+        XCTAssertThrowsError(try DocumentSession(url: file)) { error in
+            XCTAssertEqual((error as NSError).domain, NSCocoaErrorDomain)
+            XCTAssertEqual((error as NSError).code, CocoaError.fileReadTooLarge.rawValue)
+        }
+    }
+
     private func temporaryMarkdown(_ contents: String) throws -> (URL, URL) {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

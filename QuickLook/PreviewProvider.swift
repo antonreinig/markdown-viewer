@@ -7,10 +7,7 @@ final class PreviewProvider: QLPreviewProvider, QLPreviewingController {
         completionHandler handler: @escaping (QLPreviewReply?, (any Error)?) -> Void
     ) {
         do {
-            let data = try Data(contentsOf: request.fileURL)
-            guard let markdown = String(data: data, encoding: .utf8) else {
-                throw CocoaError(.fileReadInapplicableStringEncoding)
-            }
+            let markdown = try MarkdownFileReader.read(from: request.fileURL)
             let html = MarkdownPreviewDocument.html(markdown: markdown, title: request.fileURL.lastPathComponent)
             let reply = QLPreviewReply(dataOfContentType: .html, contentSize: CGSize(width: 900, height: 1100)) { _ in
                 Data(html.utf8)
