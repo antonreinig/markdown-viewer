@@ -35,7 +35,7 @@ struct WorkspaceSidebar: View {
                 VStack(spacing: 12) {
                     Image(systemName: "folder.badge.plus").font(.system(size: 32)).foregroundStyle(.secondary)
                     Button("Open Folder…") { workspace.chooseWorkspace() }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }

@@ -26,7 +26,7 @@ Open a `.md` file and edit the formatted document directly. There is no source m
 - **Use a Mac app, not an IDE.** Browse folders in a native sidebar, use standard shortcuts and undo, and preview files in Finder with Quick Look.
 - **Stay private and offline.** No accounts, analytics, cloud services, remote scripts, or runtime network dependencies.
 
-> **Early preview:** [Download paper.md 0.1.0](https://github.com/antonreinig/paper.md/releases/download/v0.1.0/paper.md-0.1.0.dmg) for Apple Silicon Macs running macOS 14 or newer.
+> **Early preview:** [Download paper.md 0.1.1](https://github.com/antonreinig/paper.md/releases/download/v0.1.1/paper.md-0.1.1.dmg) for Apple Silicon Macs running macOS 14 or newer.
 
 ## Build and run
 

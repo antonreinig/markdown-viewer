@@ -11,7 +11,7 @@ struct EmptyWorkspaceView: View {
         } actions: {
             if workspace.rootURL == nil {
                 Button("Open Folder…") { workspace.chooseWorkspace() }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.bordered)
             }
         }
     }
