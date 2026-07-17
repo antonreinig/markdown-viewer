@@ -12,13 +12,20 @@ struct RootView: View {
         } detail: {
             Group {
                 if let session = workspace.session {
-                    EditorContainer(session: session)
+                    EditorContainer(
+                        session: session,
+                        initialScrollPosition: workspace.scrollPosition(for: session.url),
+                        onScrollPositionChanged: { position in
+                            workspace.rememberScrollPosition(position, for: session.url)
+                        }
+                    )
                         .id(session.id)
                 } else {
                     EmptyWorkspaceView()
                 }
             }
         }
+        .toolbarBackground(.clear, for: .windowToolbar)
         .navigationTitle(workspace.session?.url.lastPathComponent ?? "paper.md")
         .alert("Couldn’t complete the operation", isPresented: errorIsPresented) {
             Button("OK") { workspace.errorMessage = nil; workspace.session?.errorMessage = nil }
@@ -58,9 +65,15 @@ struct RootView: View {
 
 private struct EditorContainer: View {
     @ObservedObject var session: DocumentSession
+    let initialScrollPosition: CGFloat
+    let onScrollPositionChanged: (CGFloat) -> Void
 
     var body: some View {
-        EditorWebView(session: session)
+        EditorWebView(
+            session: session,
+            initialScrollPosition: initialScrollPosition,
+            onScrollPositionChanged: onScrollPositionChanged
+        )
             .toolbar { EditorToolbar() }
             .confirmationDialog(
                 "This file changed in two places",

@@ -1,9 +1,15 @@
 import AppKit
+import Sparkle
 import SwiftUI
 
 @main
 struct PaperMDApp: App {
     @StateObject private var workspace = WorkspaceStore()
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     var body: some Scene {
         WindowGroup {
@@ -17,6 +23,7 @@ struct PaperMDApp: App {
         .commands {
             WorkspaceCommands(workspace: workspace)
             EditorCommands()
+            UpdateCommands(updater: updaterController.updater)
         }
 
         Settings {

@@ -1,7 +1,9 @@
 .DS_Store
 .build/
 DerivedData/
+*DerivedData/
 build/
+tmp/
 *.xcuserstate
 xcuserdata/
 Editor/node_modules/

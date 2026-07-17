@@ -14,7 +14,12 @@ final class WorkspaceStore: ObservableObject {
     private var directoryMonitor: DirectoryMonitor?
     private var refreshTask: Task<Void, Never>?
     private var securityScopedURL: URL?
-    private let bookmarkKey = "PaperMD.workspaceBookmark"
+    private var documentScrollPositions: [URL: CGFloat] = [:]
+    private let bookmarkKey: String
+
+    init(bookmarkKey: String = "PaperMD.workspaceBookmark") {
+        self.bookmarkKey = bookmarkKey
+    }
 
     func chooseWorkspace() {
         let panel = NSOpenPanel()
@@ -28,14 +33,19 @@ final class WorkspaceStore: ObservableObject {
     }
 
     func openWorkspace(_ url: URL) {
+        openWorkspace(url, selecting: nil, securityScopedResource: url)
+    }
+
+    func closeWorkspace() {
+        session?.flush()
+        session = nil
+        selectedFile = nil
+        rootURL = nil
+        items = []
+        refreshTask?.cancel()
+        refreshTask = nil
         stopSecurityScope()
-        if url.startAccessingSecurityScopedResource() { securityScopedURL = url }
-        rootURL = url
-        persistBookmark(url)
-        directoryMonitor = DirectoryMonitor { [weak self] in
-            Task { @MainActor [weak self] in self?.scheduleRefresh() }
-        }
-        refreshWorkspace()
+        UserDefaults.standard.removeObject(forKey: bookmarkKey)
     }
 
     func restoreWorkspaceIfAvailable() {
@@ -57,18 +67,23 @@ final class WorkspaceStore: ObservableObject {
     }
 
     func openDocument(_ url: URL) {
-        if let rootURL, url.standardizedFileURL.path.hasPrefix(rootURL.standardizedFileURL.path + "/") {
-            select(url)
+        let documentURL = normalizedFileURL(url)
+        if let rootURL, documentURL.path.hasPrefix(normalizedFileURL(rootURL).path + "/") {
+            select(documentURL)
             return
         }
-        stopSecurityScope()
-        if url.startAccessingSecurityScopedResource() { securityScopedURL = url }
-        rootURL = url.deletingLastPathComponent()
-        items = [WorkspaceItem(url: url, isDirectory: false, children: nil)]
-        select(url)
+        openWorkspace(
+            documentURL.deletingLastPathComponent(),
+            selecting: documentURL,
+            securityScopedResource: url
+        )
     }
 
     func select(_ url: URL?) {
+        if let url,
+           (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
+            return
+        }
         session?.flush()
         selectedFile = url
         guard let url else { session = nil; return }
@@ -81,6 +96,15 @@ final class WorkspaceStore: ObservableObject {
             session = nil
             errorMessage = error.localizedDescription
         }
+    }
+
+    func scrollPosition(for url: URL) -> CGFloat {
+        documentScrollPositions[normalizedFileURL(url)] ?? 0
+    }
+
+    func rememberScrollPosition(_ position: CGFloat, for url: URL) {
+        guard position.isFinite else { return }
+        documentScrollPositions[normalizedFileURL(url)] = max(0, position)
     }
 
     func createFile() {
@@ -184,6 +208,31 @@ final class WorkspaceStore: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func openWorkspace(_ url: URL, selecting selectedURL: URL?, securityScopedResource: URL) {
+        session?.flush()
+        session = nil
+        selectedFile = nil
+        refreshTask?.cancel()
+        refreshTask = nil
+        stopSecurityScope()
+
+        if securityScopedResource.startAccessingSecurityScopedResource() {
+            securityScopedURL = securityScopedResource
+        }
+        let workspaceURL = normalizedFileURL(url)
+        rootURL = workspaceURL
+        persistBookmark(workspaceURL)
+        directoryMonitor = DirectoryMonitor { [weak self] in
+            Task { @MainActor [weak self] in self?.scheduleRefresh() }
+        }
+        refreshWorkspace()
+        if let selectedURL { select(selectedURL) }
+    }
+
+    private func normalizedFileURL(_ url: URL) -> URL {
+        url.standardizedFileURL.resolvingSymlinksInPath()
     }
 
     private func stopSecurityScope() {

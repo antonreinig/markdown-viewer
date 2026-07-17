@@ -5,8 +5,16 @@ import WebKit
 
 struct EditorWebView: NSViewRepresentable {
     @ObservedObject var session: DocumentSession
+    let initialScrollPosition: CGFloat
+    let onScrollPositionChanged: (CGFloat) -> Void
 
-    func makeCoordinator() -> Coordinator { Coordinator(session: session) }
+    func makeCoordinator() -> Coordinator {
+        Coordinator(
+            session: session,
+            initialScrollPosition: initialScrollPosition,
+            onScrollPositionChanged: onScrollPositionChanged
+        )
+    }
 
     func makeNSView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
@@ -47,6 +55,7 @@ struct EditorWebView: NSViewRepresentable {
     }
 
     static func dismantleNSView(_ webView: WKWebView, coordinator: Coordinator) {
+        coordinator.saveScrollPosition(from: webView)
         coordinator.stop()
         webView.stopLoading()
         for name in Coordinator.messageNames {
@@ -62,9 +71,18 @@ struct EditorWebView: NSViewRepresentable {
         var session: DocumentSession
         private var isReady = false
         private var lastLoadedMarkdown: String?
+        private var hasLoadedDocument = false
+        private let initialScrollPosition: CGFloat
+        private let onScrollPositionChanged: (CGFloat) -> Void
 
-        init(session: DocumentSession) {
+        init(
+            session: DocumentSession,
+            initialScrollPosition: CGFloat,
+            onScrollPositionChanged: @escaping (CGFloat) -> Void
+        ) {
             self.session = session
+            self.initialScrollPosition = initialScrollPosition
+            self.onScrollPositionChanged = onScrollPositionChanged
             super.init()
             NotificationCenter.default.addObserver(
                 self,
@@ -85,23 +103,27 @@ struct EditorWebView: NSViewRepresentable {
         func loadMarkdownIfReady(_ markdown: String) {
             guard isReady, markdown != lastLoadedMarkdown else { return }
             guard let argument = Self.javaScriptArgument(markdown) else { return }
-            webView?.evaluateJavaScript("window.editorBridge.loadMarkdown(\(argument))") { [weak self] result, error in
+            let scrollPosition = hasLoadedDocument ? currentScrollPosition : initialScrollPosition
+            let script = "window.editorBridge.loadMarkdown(\(argument), \(scrollPosition))"
+            webView?.evaluateJavaScript(script) { [weak self] result, error in
                 Task { @MainActor [weak self] in
                     guard let self else { return }
                     if let confirmed = result as? String,
                        markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                         || !confirmed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         self.lastLoadedMarkdown = markdown
+                        self.hasLoadedDocument = true
                         self.logger.info("Editor confirmed document load (source: \(markdown.count), serialized: \(confirmed.count) characters)")
                     } else {
                         if let error { self.logger.error("Editor load failed: \(error.localizedDescription, privacy: .public)") }
                         try? await Task.sleep(for: .milliseconds(50))
                         guard self.lastLoadedMarkdown != markdown else { return }
-                        self.webView?.evaluateJavaScript("window.editorBridge.loadMarkdown(\(argument))") { retryResult, retryError in
+                        self.webView?.evaluateJavaScript(script) { retryResult, retryError in
                             if let confirmed = retryResult as? String,
                                markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                                 || !confirmed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 self.lastLoadedMarkdown = markdown
+                                self.hasLoadedDocument = true
                                 self.logger.info("Editor confirmed document load after retry (serialized: \(confirmed.count) characters)")
                             } else {
                                 self.logger.error("Editor did not confirm document load: \(retryError?.localizedDescription ?? "empty result", privacy: .public)")
@@ -111,6 +133,26 @@ struct EditorWebView: NSViewRepresentable {
                     }
                 }
             }
+        }
+
+        func saveScrollPosition(from webView: WKWebView) {
+            onScrollPositionChanged(scrollPosition(in: webView) ?? 0)
+        }
+
+        private var currentScrollPosition: CGFloat {
+            webView.flatMap { scrollPosition(in: $0) } ?? initialScrollPosition
+        }
+
+        private func scrollPosition(in view: NSView) -> CGFloat? {
+            if let scrollView = view as? NSScrollView {
+                return scrollView.contentView.bounds.origin.y
+            }
+            for subview in view.subviews {
+                if let position = scrollPosition(in: subview) {
+                    return position
+                }
+            }
+            return nil
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -124,10 +166,8 @@ struct EditorWebView: NSViewRepresentable {
                 session.editorChanged(markdown)
             case "openLink":
                 guard let body = message.body as? [String: Any],
-                      let value = body["url"] as? String,
-                      let url = URL(string: value),
-                      ["http", "https", "mailto"].contains(url.scheme?.lowercased() ?? "") else { return }
-                NSWorkspace.shared.open(url)
+                      let value = body["url"] as? String else { return }
+                openLink(value)
             case "editorError":
                 let body = message.body as? [String: Any]
                 let details = body?["message"] as? String ?? "Unknown JavaScript error"
@@ -154,8 +194,30 @@ struct EditorWebView: NSViewRepresentable {
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
             guard navigationAction.navigationType == .linkActivated, let url = navigationAction.request.url else { return .allow }
-            if ["http", "https", "mailto"].contains(url.scheme?.lowercased() ?? "") { NSWorkspace.shared.open(url) }
+            openLink(url.absoluteString)
             return .cancel
+        }
+
+        private func openLink(_ value: String) {
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+
+            if trimmed.hasPrefix("#") {
+                guard let fragment = String(trimmed.dropFirst()).removingPercentEncoding,
+                      let argument = Self.javaScriptArgument(fragment) else { return }
+                webView?.evaluateJavaScript("document.getElementById(\(argument))?.scrollIntoView({ behavior: 'smooth', block: 'start' })")
+                return
+            }
+
+            if let url = URL(string: trimmed), let scheme = url.scheme?.lowercased() {
+                guard ["http", "https", "mailto", "file"].contains(scheme) else { return }
+                NSWorkspace.shared.open(url)
+                return
+            }
+
+            let base = session.url.deletingLastPathComponent()
+            let resolved = URL(fileURLWithPath: trimmed.removingPercentEncoding ?? trimmed, relativeTo: base).standardizedFileURL
+            NSWorkspace.shared.open(resolved)
         }
 
         @objc private func receiveEditorCommand(_ notification: Notification) {

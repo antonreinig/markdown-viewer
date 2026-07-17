@@ -12,8 +12,11 @@
   <key>NSExtension</key><dict>
     <key>NSExtensionPointIdentifier</key><string>com.apple.quicklook.preview</string>
     <key>NSExtensionPrincipalClass</key><string>$(PRODUCT_MODULE_NAME).PreviewProvider</string>
-    <key>QLIsDataBasedPreview</key><true/>
-    <key>QLSupportedContentTypes</key><array><string>net.daringfireball.markdown</string></array>
+    <key>NSExtensionAttributes</key><dict>
+      <key>QLIsDataBasedPreview</key><true/>
+      <key>QLSupportedContentTypes</key><array><string>net.daringfireball.markdown</string></array>
+      <key>QLSupportsSearchableItems</key><false/>
+    </dict>
   </dict>
   <key>UTImportedTypeDeclarations</key>
   <array>

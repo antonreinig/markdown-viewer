@@ -1,5 +1,18 @@
 import AppKit
+import Sparkle
 import SwiftUI
+
+struct UpdateCommands: Commands {
+    let updater: SPUUpdater
+
+    var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            Button("Check for Updates…") {
+                updater.checkForUpdates()
+            }
+        }
+    }
+}
 
 struct WorkspaceCommands: Commands {
     @ObservedObject var workspace: WorkspaceStore

@@ -5,9 +5,13 @@ import { TableKit } from '@tiptap/extension-table'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import { Markdown } from '@tiptap/markdown'
+import { compatibilityExtensions } from './markdown-compatibility'
+import { createLinkPopover } from './link-popover'
+import { restoreScrollPosition } from './scroll-position'
 import './style.css'
 
 let applyingHostUpdate = false
+let linkPopover
 
 const post = (name, body = {}) => {
   const handler = window.webkit?.messageHandlers?.[name]
@@ -27,6 +31,7 @@ const editor = new Editor({
     TableKit.configure({ table: { resizable: true, lastColumnResizable: false } }),
     TaskList,
     TaskItem.configure({ nested: true }),
+    ...compatibilityExtensions,
     Markdown.configure({ markedOptions: { gfm: true } }),
   ],
   content: '',
@@ -41,21 +46,36 @@ const editor = new Editor({
     },
     handleClick(view, position, event) {
       const anchor = event.target.closest?.('a[href]')
-      if (anchor && event.metaKey) {
+      if (anchor) {
         event.preventDefault()
-        post('openLink', { url: anchor.href })
+        linkPopover?.show(anchor)
+        post('openLink', { url: anchor.getAttribute('href') || '' })
         return true
       }
       return false
     },
+    handleDOMEvents: {
+      mouseover(view, event) {
+        const anchor = event.target.closest?.('a[href]')
+        if (anchor) linkPopover?.show(anchor)
+        return false
+      },
+      mouseout(view, event) {
+        const anchor = event.target.closest?.('a[href]')
+        if (anchor && !anchor.contains(event.relatedTarget)) linkPopover?.hide()
+        return false
+      },
+    },
   },
   onCreate() {
     queueMicrotask(() => {
+      updateHeadingIds()
       post('ready')
       updateSelectionState()
     })
   },
   onUpdate({ editor: updatedEditor }) {
+    updateHeadingIds()
     if (!applyingHostUpdate) {
       post('documentChanged', { markdown: updatedEditor.getMarkdown() })
     }
@@ -63,6 +83,23 @@ const editor = new Editor({
   },
   onSelectionUpdate: updateSelectionState,
 })
+
+linkPopover = createLinkPopover(editor, post)
+
+function updateHeadingIds() {
+  const used = new Map()
+  document.querySelectorAll('.document h1, .document h2, .document h3, .document h4, .document h5, .document h6').forEach(heading => {
+    const base = (heading.textContent || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s-]/gu, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-') || 'section'
+    const count = used.get(base) || 0
+    used.set(base, count + 1)
+    heading.id = count ? `${base}-${count}` : base
+  })
+}
 
 function updateSelectionState() {
   if (!editor) return
@@ -114,16 +151,19 @@ const commands = {
 }
 
 window.editorBridge = {
-  loadMarkdown(markdown) {
+  loadMarkdown(markdown, scrollPosition = 0) {
     const incoming = typeof markdown === 'string' ? markdown : ''
-    if (incoming === editor.getMarkdown()) return editor.getMarkdown()
-    applyingHostUpdate = true
-    try {
-      editor.commands.setContent(incoming, { contentType: 'markdown', emitUpdate: false })
-    } finally {
-      applyingHostUpdate = false
-      updateSelectionState()
+    if (incoming !== editor.getMarkdown()) {
+      applyingHostUpdate = true
+      try {
+        editor.commands.setContent(incoming, { contentType: 'markdown', emitUpdate: false })
+        updateHeadingIds()
+      } finally {
+        applyingHostUpdate = false
+        updateSelectionState()
+      }
     }
+    restoreScrollPosition(scrollPosition)
     return editor.getMarkdown()
   },
   perform(name, payload = {}) {
@@ -132,4 +172,14 @@ window.editorBridge = {
   getMarkdown() {
     return editor.getMarkdown()
   },
+}
+
+// Local browser previews can provide a document without affecting the bundled file-based app.
+if (location.protocol.startsWith('http')) {
+  const previewParameters = new URLSearchParams(location.search)
+  const previewMarkdown = previewParameters.get('markdown')
+  if (previewMarkdown) window.editorBridge.loadMarkdown(previewMarkdown)
+  if (previewParameters.has('showLinkPopover')) {
+    window.requestAnimationFrame(() => linkPopover.show(document.querySelector('.document a[href]')))
+  }
 }

@@ -80,14 +80,17 @@ struct MarkdownHTMLRenderer: MarkupVisitor {
 
 enum MarkdownPreviewDocument {
     static func html(markdown: String, title: String) -> String {
-        let document = Document(parsing: markdown, options: [.parseBlockDirectives, .parseSymbolLinks])
+        let (frontMatter, content) = splitFrontMatter(from: markdown)
+        let document = Document(parsing: content, options: [.parseBlockDirectives, .parseSymbolLinks])
         var renderer = MarkdownHTMLRenderer()
-        let body = renderer.visit(document)
+        let metadata = frontMatter.map { "<aside class=\"front-matter\"><strong>Document metadata</strong><pre>\(escapeHTML($0))</pre></aside>" } ?? ""
+        let body = metadata + renderer.visit(document)
         return """
         <!doctype html>
         <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: file:">
         <style>
-        :root{color-scheme:light dark;font:16px/1.58 -apple-system,BlinkMacSystemFont,sans-serif}body{max-width:820px;margin:0 auto;padding:48px 58px 100px;color:light-dark(#1d1d1f,#f5f5f7)}h1{font-size:2.1em;letter-spacing:-.035em}h2{font-size:1.55em;margin-top:1.5em}a{color:-apple-system-link}blockquote{border-left:3px solid light-dark(#d2d2d7,#424245);color:light-dark(#6e6e73,#a1a1a6);margin:1em 0;padding-left:1em}code{background:light-dark(#f5f5f7,#242426);border-radius:5px;padding:.12em .35em;font: .9em SFMono-Regular,monospace}pre{background:light-dark(#f5f5f7,#242426);border-radius:9px;overflow:auto;padding:16px 18px}pre code{background:none;padding:0}img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid light-dark(#d2d2d7,#424245);padding:8px 10px;text-align:left}hr{border:0;border-top:1px solid light-dark(#d2d2d7,#424245);margin:2em 0}
+        :root{color-scheme:light dark;font:16px/1.58 -apple-system,BlinkMacSystemFont,sans-serif}body{max-width:820px;margin:0 auto;padding:48px 58px 100px;color:light-dark(#1d1d1f,#f5f5f7)}h1{font-size:2.1em;letter-spacing:-.035em}h2{font-size:1.55em;margin-top:1.5em}a{color:-apple-system-link}blockquote{border-left:3px solid light-dark(#d2d2d7,#424245);color:light-dark(#6e6e73,#a1a1a6);margin:1em 0;padding-left:1em}code{background:light-dark(#f5f5f7,#242426);border-radius:5px;padding:.12em .35em;font: .9em SFMono-Regular,monospace}pre{background:light-dark(#f5f5f7,#242426);border-radius:9px;overflow:auto;padding:16px 18px}pre code{background:none;padding:0}img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid light-dark(#d2d2d7,#424245);padding:8px 10px;text-align:left}hr{border:0;border-top:1px solid light-dark(#d2d2d7,#424245);margin:2em 0}.front-matter{background:light-dark(#f5f5f7,#242426);border:1px solid light-dark(#d2d2d7,#424245);border-radius:9px;color:light-dark(#6e6e73,#a1a1a6);font-size:.82em;margin:0 0 2em;padding:12px 14px}.front-matter pre{background:none;margin:.5em 0 0;padding:0;white-space:pre-wrap}
         </style><title>\(escapeTitle(title))</title></head><body>\(body)</body></html>
         """
     }
@@ -96,5 +99,21 @@ enum MarkdownPreviewDocument {
         title.replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
+    }
+
+    private static func escapeHTML(_ value: String) -> String {
+        value.replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+    }
+
+    private static func splitFrontMatter(from markdown: String) -> (String?, String) {
+        guard markdown.hasPrefix("---\n") || markdown.hasPrefix("---\r\n") else { return (nil, markdown) }
+        let normalized = markdown.replacingOccurrences(of: "\r\n", with: "\n")
+        let lines = normalized.split(separator: "\n", omittingEmptySubsequences: false)
+        guard let closing = lines.dropFirst().firstIndex(where: { $0 == "---" || $0 == "..." }) else { return (nil, markdown) }
+        let metadata = lines[1..<closing].joined(separator: "\n")
+        let content = lines.dropFirst(closing + 1).joined(separator: "\n")
+        return (metadata, content)
     }
 }

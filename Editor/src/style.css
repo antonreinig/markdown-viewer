@@ -8,6 +8,9 @@
   --code: light-dark(#f5f5f7, #242426);
   --selection: light-dark(#b7d7ff, #345d91);
   --table-highlight: light-dark(#eef5ff, #1f324b);
+  --popover: light-dark(#29292b, #3a3a3c);
+  --popover-text: #fff;
+  --mark: light-dark(#fff0a8, #665711);
 }
 
 * { box-sizing: border-box; }
@@ -31,6 +34,9 @@ body { overflow-y: auto; }
 .document p { margin: .62em 0; }
 .document a { color: -apple-system-link; text-decoration: none; }
 .document a:hover { text-decoration: underline; }
+.document img { border-radius: 6px; display: block; height: auto; margin: 1em 0; max-width: 100%; }
+.document mark { background: var(--mark); border-radius: 3px; color: inherit; padding: 0 .08em; }
+.document sup { font-size: .72em; }
 .document blockquote { border-left: 3px solid var(--border); color: var(--secondary); margin: 1em 0; padding-left: 1em; }
 .document code { background: var(--code); border-radius: 5px; padding: .12em .35em; font-family: "SFMono-Regular", ui-monospace, monospace; font-size: .9em; }
 .document pre { background: var(--code); border-radius: 9px; overflow-x: auto; padding: 16px 18px; }
@@ -46,5 +52,65 @@ body { overflow-y: auto; }
 .document .selectedCell::after { background: var(--table-highlight); content: ""; inset: 0; pointer-events: none; position: absolute; z-index: -1; }
 .document .column-resize-handle { background: -apple-system-control-accent; bottom: -1px; pointer-events: none; position: absolute; right: -2px; top: 0; width: 3px; }
 .resize-cursor { cursor: col-resize; }
-@media (max-width: 700px) { .document { padding: 36px 32px 120px; } }
 
+.markdown-atom {
+  align-items: baseline;
+  background: var(--code);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--secondary);
+  display: inline-flex;
+  font-family: "SFMono-Regular", ui-monospace, monospace;
+  font-size: .84em;
+  gap: .55em;
+  margin: .08em .14em;
+  max-width: 100%;
+  padding: .18em .5em;
+  vertical-align: baseline;
+}
+.markdown-atom-badge { color: -apple-system-link; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: .86em; font-weight: 600; text-transform: uppercase; }
+.markdown-atom-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.document > .markdown-atom { display: flex; margin: 1em 0; padding: .65em .75em; }
+.markdown-atom-Math .markdown-atom-value { color: var(--text); font-family: "New York", Georgia, serif; font-size: 1.08em; font-style: italic; }
+
+.link-popover {
+  background: var(--popover);
+  border: 1px solid rgb(255 255 255 / .09);
+  border-radius: 9px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / .34), 0 2px 8px rgb(0 0 0 / .22);
+  color: var(--popover-text);
+  font: 14px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  position: fixed;
+  z-index: 1000;
+}
+.link-popover[hidden] { display: none; }
+.link-popover::after {
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--popover);
+  bottom: -8px;
+  content: "";
+  left: var(--arrow-left, 50%);
+  position: absolute;
+  transform: translateX(-50%);
+}
+.link-popover.below::after { border-bottom: 8px solid var(--popover); border-top: 0; bottom: auto; top: -8px; }
+.link-popover-actions { align-items: stretch; display: flex; height: 40px; }
+.link-popover-actions[hidden] { display: none; }
+.link-popover button { appearance: none; background: transparent; border: 0; color: inherit; cursor: default; font: inherit; }
+.link-popover button:hover, .link-popover button:focus-visible { background: rgb(255 255 255 / .1); outline: none; }
+.link-open { align-items: center; border-radius: 8px 0 0 8px !important; display: flex; gap: 7px; max-width: 280px; padding: 0 13px; }
+.link-open-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-edit { border-radius: 0 8px 8px 0 !important; font-weight: 600 !important; padding: 0 13px; }
+.link-popover-divider { background: rgb(255 255 255 / .18); margin: 8px 0; width: 1px; }
+.link-popover-editor { display: grid; gap: 10px; padding: 12px; width: 330px; }
+.link-popover-editor[hidden] { display: none; }
+.link-popover-editor label { color: rgb(255 255 255 / .7); display: grid; font-size: 11px; gap: 4px; }
+.link-popover-editor input { background: rgb(255 255 255 / .1); border: 1px solid rgb(255 255 255 / .18); border-radius: 6px; color: #fff; font: 13px/1.25 -apple-system, sans-serif; outline: none; padding: 7px 8px; width: 100%; }
+.link-popover-editor input:focus { border-color: -apple-system-control-accent; box-shadow: 0 0 0 2px color-mix(in srgb, -apple-system-control-accent 35%, transparent); }
+.link-popover-editor-actions { display: flex; justify-content: flex-end; margin: 2px -5px -5px; }
+.link-popover-editor-actions button { border-radius: 5px; padding: 6px 8px; }
+.link-popover-editor-actions .link-remove { color: #ffb4ad; margin-right: auto; }
+.link-popover-editor-actions .link-save { background: -apple-system-control-accent; color: white; font-weight: 600; }
+.link-popover-editor-actions .link-save:hover { filter: brightness(1.08); }
+@media (max-width: 700px) { .document { padding: 36px 32px 120px; } }

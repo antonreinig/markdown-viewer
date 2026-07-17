@@ -3,23 +3,13 @@ import SwiftUI
 
 struct WorkspaceSidebar: View {
     @EnvironmentObject private var workspace: WorkspaceStore
+    @State private var expandedFolders: Set<URL> = []
 
     var body: some View {
         VStack(spacing: 0) {
             if let root = workspace.rootURL {
                 List(selection: selection) {
-                    OutlineGroup(workspace.items, children: \.children) { item in
-                        Label(item.name, systemImage: item.isDirectory ? "folder" : "doc.text")
-                            .tag(item.isDirectory ? nil as URL? : item.url as URL?)
-                            .help(item.url.path)
-                            .accessibilityLabel(item.isDirectory ? "Folder \(item.name)" : "Markdown file \(item.name)")
-                            .contextMenu {
-                                Button("Rename…") { workspace.rename(item) }
-                                Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([item.url]) }
-                                Divider()
-                                Button("Move to Trash", role: .destructive) { workspace.moveToTrash(item) }
-                            }
-                    }
+                    WorkspaceItemRows(items: workspace.items, expandedFolders: $expandedFolders)
                 }
                 .listStyle(.sidebar)
                 .safeAreaInset(edge: .top) {
@@ -27,10 +17,19 @@ struct WorkspaceSidebar: View {
                         Image(systemName: "folder")
                         Text(root.lastPathComponent).font(.headline).lineLimit(1)
                         Spacer()
+                        Button { workspace.closeWorkspace() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 10, weight: .semibold))
+                                .frame(width: 18, height: 18)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.secondary)
+                        .help("Close Folder")
+                        .accessibilityLabel("Close folder \(root.lastPathComponent)")
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
-                    .background(.bar)
                 }
             } else {
                 VStack(spacing: 12) {
@@ -42,7 +41,12 @@ struct WorkspaceSidebar: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button { workspace.chooseWorkspace() } label: {
+                    Label("Open Folder", systemImage: "folder")
+                }
+                .help("Open Folder (⇧⌘O)")
+
                 Menu {
                     Button("New Markdown File") { workspace.createFile() }
                     Button("New Folder") { workspace.createFolder() }
@@ -56,5 +60,68 @@ struct WorkspaceSidebar: View {
 
     private var selection: Binding<URL?> {
         Binding(get: { workspace.selectedFile }, set: { workspace.select($0) })
+    }
+}
+
+private struct WorkspaceItemRows: View {
+    @EnvironmentObject private var workspace: WorkspaceStore
+
+    let items: [WorkspaceItem]
+    @Binding var expandedFolders: Set<URL>
+
+    var body: some View {
+        ForEach(items) { item in
+            if item.isDirectory {
+                DisclosureGroup(isExpanded: expansionBinding(for: item.url)) {
+                    WorkspaceItemRows(
+                        items: item.children ?? [],
+                        expandedFolders: $expandedFolders
+                    )
+                } label: {
+                    Label(item.name, systemImage: "folder")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .onTapGesture { toggleExpansion(for: item.url) }
+                }
+                .help(item.url.path)
+                .accessibilityLabel("Folder \(item.name)")
+                .contextMenu { contextMenu(for: item) }
+            } else {
+                Label(item.name, systemImage: "doc.text")
+                    .tag(item.url)
+                    .help(item.url.path)
+                    .accessibilityLabel("Markdown file \(item.name)")
+                    .contextMenu { contextMenu(for: item) }
+            }
+        }
+    }
+
+    private func expansionBinding(for url: URL) -> Binding<Bool> {
+        Binding(
+            get: { expandedFolders.contains(url) },
+            set: { isExpanded in
+                if isExpanded {
+                    expandedFolders.insert(url)
+                } else {
+                    expandedFolders.remove(url)
+                }
+            }
+        )
+    }
+
+    private func toggleExpansion(for url: URL) {
+        if expandedFolders.contains(url) {
+            expandedFolders.remove(url)
+        } else {
+            expandedFolders.insert(url)
+        }
+    }
+
+    @ViewBuilder
+    private func contextMenu(for item: WorkspaceItem) -> some View {
+        Button("Rename…") { workspace.rename(item) }
+        Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([item.url]) }
+        Divider()
+        Button("Move to Trash", role: .destructive) { workspace.moveToTrash(item) }
     }
 }

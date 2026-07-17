@@ -11,12 +11,15 @@
 		0FA2FFAEAB948A1E9A47FD66 /* FileObservationPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF33482B11BD393282B1D3C /* FileObservationPresenter.swift */; };
 		10FE5590F969771598CC0E90 /* WorkspaceItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1A3736A19709B6009CAC37 /* WorkspaceItem.swift */; };
 		192CFF2473FBA3FBD684569C /* WorkspaceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F36B4B59DF992A10E420135 /* WorkspaceStore.swift */; };
+		1FEFFABAD79BFE3F7B3EC72D /* Sparkle.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1BC8339F549E7C2B9501EDDE /* Sparkle.txt */; };
 		211C6F47C3E34D84773FA958 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8F99749E2CFD9D0297EFFA /* RootView.swift */; };
+		2328E0C8E18ED0DB182908D9 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A3B902821C656CD8E7C34BD7 /* Sparkle */; };
 		232E4905331BB60E13AEA79E /* MergeEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BB466EBEE8A3C700C17965 /* MergeEngineTests.swift */; };
 		2BCBF7348B1E72DB84671EFF /* DocumentSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A796BA068E767C0BDE7E049 /* DocumentSessionTests.swift */; };
 		3562C318F236552D9F888F62 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27E1EE65401FD17F6796EBC5 /* AppCommands.swift */; };
 		3F20C5FD1956F66B083CAC7A /* BundleResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905D7A17777870BD62EC14C1 /* BundleResourceTests.swift */; };
 		531C11B1DE61804502DF1BB2 /* MergeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179F08600264FF90C5E67A0C /* MergeEngine.swift */; };
+		606A6B080FADE9AA0B8D4E60 /* ThumbnailProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420FA295EC1B004E470F4552 /* ThumbnailProvider.swift */; };
 		62AF49586361736CDFCA8BD8 /* PaperMDQuickLook.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 39408C7CB94AFCC4F57DAA75 /* PaperMDQuickLook.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6A7EDB6C1A82848600461DA0 /* WorkspaceSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6DFE838E5082EFA050DDAFF /* WorkspaceSidebar.swift */; };
 		6E4D77C0D502E886D4626CE6 /* WorkspaceItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05CDE72CE211BE16FE2FBE83 /* WorkspaceItemTests.swift */; };
@@ -29,12 +32,22 @@
 		B0835F2E94EDDAEB6DB1CECF /* EditorWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B58D4D383993994D69E0179 /* EditorWebView.swift */; };
 		B1DB2FF825D31B1910BF11EA /* PreviewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D1A76E8011777598D0958C /* PreviewProvider.swift */; };
 		C800C8678A4E9CAFCAA05434 /* PaperMDApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4627FA355C8EAE1AE220188 /* PaperMDApp.swift */; };
+		D69F5CD6CE13BAFEBA5AF63C /* WorkspaceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7E8B6DBAE47D96399EFD392 /* WorkspaceStoreTests.swift */; };
 		D8AEE8D534E2C3D5DD17BFC0 /* DocumentSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE18FA177D2A8EC67FDA28A0 /* DocumentSession.swift */; };
 		D965D21A79BAAFEB83223FF4 /* EditorToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D260E866C0546F45C541785E /* EditorToolbar.swift */; };
 		DD5B377B5E2DF715C528DC3F /* MarkdownHTMLRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3BC9C0CF90F825DEC235C5 /* MarkdownHTMLRenderer.swift */; };
+		DDD26A26B130BAEC943FAD20 /* PaperMDThumbnail.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8A38E9885FBA9D88097BA16D /* PaperMDThumbnail.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E05162C3FBEB3521F49CDD07 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E4D059AED3AA613219589758 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1A6AC19FCD19DE88A3F81639 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98140C901FA3DA6EE66525F4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A9440ADBA1F7F419E449EEB5;
+			remoteInfo = PaperMDThumbnail;
+		};
 		79CCED0862FCADA494299608 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 98140C901FA3DA6EE66525F4 /* Project object */;
@@ -59,6 +72,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				62AF49586361736CDFCA8BD8 /* PaperMDQuickLook.appex in Embed Foundation Extensions */,
+				DDD26A26B130BAEC943FAD20 /* PaperMDThumbnail.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -71,14 +85,19 @@
 		0F36B4B59DF992A10E420135 /* WorkspaceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceStore.swift; sourceTree = "<group>"; };
 		1069A222D25AB971560CD342 /* EmptyWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyWorkspaceView.swift; sourceTree = "<group>"; };
 		179F08600264FF90C5E67A0C /* MergeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeEngine.swift; sourceTree = "<group>"; };
+		1BC8339F549E7C2B9501EDDE /* Sparkle.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Sparkle.txt; sourceTree = "<group>"; };
 		216BCE5BEEE42004FB3CF7AB /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		27E1EE65401FD17F6796EBC5 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
 		39408C7CB94AFCC4F57DAA75 /* PaperMDQuickLook.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PaperMDQuickLook.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A3BC9C0CF90F825DEC235C5 /* MarkdownHTMLRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownHTMLRenderer.swift; sourceTree = "<group>"; };
 		3A801F2158270DE7D4502DCE /* QuickLook.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLook.entitlements; sourceTree = "<group>"; };
+		420FA295EC1B004E470F4552 /* ThumbnailProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailProvider.swift; sourceTree = "<group>"; };
+		4861226274A41012FF9D8A1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		53B6DA25FC3596D0B4347C92 /* QuickLookThumbnail.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookThumbnail.entitlements; sourceTree = "<group>"; };
 		53BB466EBEE8A3C700C17965 /* MergeEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeEngineTests.swift; sourceTree = "<group>"; };
 		5A796BA068E767C0BDE7E049 /* DocumentSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSessionTests.swift; sourceTree = "<group>"; };
 		81682BEDAFFADC4B939D1687 /* DirectoryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryMonitor.swift; sourceTree = "<group>"; };
+		8A38E9885FBA9D88097BA16D /* PaperMDThumbnail.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PaperMDThumbnail.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B58D4D383993994D69E0179 /* EditorWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWebView.swift; sourceTree = "<group>"; };
 		905D7A17777870BD62EC14C1 /* BundleResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleResourceTests.swift; sourceTree = "<group>"; };
 		998CBFEAAFC2ADDAB2F066A4 /* PaperMDTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaperMDTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -89,7 +108,9 @@
 		BE18FA177D2A8EC67FDA28A0 /* DocumentSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSession.swift; sourceTree = "<group>"; };
 		BF760676F1701B2EA1DA8242 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C6DFE838E5082EFA050DDAFF /* WorkspaceSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSidebar.swift; sourceTree = "<group>"; };
+		C7E8B6DBAE47D96399EFD392 /* WorkspaceStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceStoreTests.swift; sourceTree = "<group>"; };
 		D260E866C0546F45C541785E /* EditorToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorToolbar.swift; sourceTree = "<group>"; };
+		E4D059AED3AA613219589758 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E702F03866D612E27607F509 /* PaperMD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PaperMD.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEF33482B11BD393282B1D3C /* FileObservationPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileObservationPresenter.swift; sourceTree = "<group>"; };
 		F282D3B9A2C5F679DF53E0A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -99,6 +120,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		6AE61A6E69D547123ECB7A0E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2328E0C8E18ED0DB182908D9 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3614C16130F7B34723F877A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -113,6 +142,7 @@
 		01FF6856385222240B15D0DC /* App */ = {
 			isa = PBXGroup;
 			children = (
+				E4D059AED3AA613219589758 /* Assets.xcassets */,
 				BCC341DDF50A6045219365C9 /* Info.plist */,
 				058057E02E5FCD4BBB6CE1D0 /* PaperMD.entitlements */,
 				93002B9A60F73D1FD4D3A5BC /* Application */,
@@ -135,13 +165,23 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		39573458168CEF1E1F37B63C /* ThirdPartyNotices */ = {
+			isa = PBXGroup;
+			children = (
+				1BC8339F549E7C2B9501EDDE /* Sparkle.txt */,
+			);
+			path = ThirdPartyNotices;
+			sourceTree = "<group>";
+		};
 		3AB4E81B41801C56011209D6 = {
 			isa = PBXGroup;
 			children = (
 				01FF6856385222240B15D0DC /* App */,
 				6E6D63F4FCA2EC95C62D2986 /* BundledEditor */,
 				F3DD5FB4C6B5A6E0BD99324A /* QuickLook */,
+				B45BF85C68163B574304AEF6 /* QuickLookThumbnail */,
 				A3F7DB42E2BA13D6C7B33391 /* Tests */,
+				39573458168CEF1E1F37B63C /* ThirdPartyNotices */,
 				F7308DF003416E038756A307 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -202,6 +242,16 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		B45BF85C68163B574304AEF6 /* QuickLookThumbnail */ = {
+			isa = PBXGroup;
+			children = (
+				4861226274A41012FF9D8A1E /* Info.plist */,
+				53B6DA25FC3596D0B4347C92 /* QuickLookThumbnail.entitlements */,
+				420FA295EC1B004E470F4552 /* ThumbnailProvider.swift */,
+			);
+			path = QuickLookThumbnail;
+			sourceTree = "<group>";
+		};
 		F053D44666B35EA27A42E2EF /* PaperMDTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -209,6 +259,7 @@
 				5A796BA068E767C0BDE7E049 /* DocumentSessionTests.swift */,
 				53BB466EBEE8A3C700C17965 /* MergeEngineTests.swift */,
 				05CDE72CE211BE16FE2FBE83 /* WorkspaceItemTests.swift */,
+				C7E8B6DBAE47D96399EFD392 /* WorkspaceStoreTests.swift */,
 			);
 			path = PaperMDTests;
 			sourceTree = "<group>";
@@ -238,6 +289,7 @@
 				E702F03866D612E27607F509 /* PaperMD.app */,
 				39408C7CB94AFCC4F57DAA75 /* PaperMDQuickLook.appex */,
 				998CBFEAAFC2ADDAB2F066A4 /* PaperMDTests.xctest */,
+				8A38E9885FBA9D88097BA16D /* PaperMDThumbnail.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -288,19 +340,39 @@
 			buildPhases = (
 				788F4176221B424514E0D087 /* Sources */,
 				59CF955C97FCE5DA94D7C905 /* Resources */,
+				6AE61A6E69D547123ECB7A0E /* Frameworks */,
 				4FCE36C834EC1AB59D97554A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				B51F47CE3D6C6B87DC969A58 /* PBXTargetDependency */,
+				462FC88556BD2ED11007B682 /* PBXTargetDependency */,
 			);
 			name = PaperMD;
 			packageProductDependencies = (
+				A3B902821C656CD8E7C34BD7 /* Sparkle */,
 			);
 			productName = PaperMD;
 			productReference = E702F03866D612E27607F509 /* PaperMD.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A9440ADBA1F7F419E449EEB5 /* PaperMDThumbnail */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3CBFFE2664D0A61C49740F3D /* Build configuration list for PBXNativeTarget "PaperMDThumbnail" */;
+			buildPhases = (
+				97EFD79573CB0821B6EE5CEC /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PaperMDThumbnail;
+			packageProductDependencies = (
+			);
+			productName = PaperMDThumbnail;
+			productReference = 8A38E9885FBA9D88097BA16D /* PaperMDThumbnail.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -323,6 +395,10 @@
 						DevelopmentTeam = 8DTMQ4N2LA;
 						ProvisioningStyle = Automatic;
 					};
+					A9440ADBA1F7F419E449EEB5 = {
+						DevelopmentTeam = 8DTMQ4N2LA;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 6154D9A8C3FFFAE92F0F755E /* Build configuration list for PBXProject "PaperMD" */;
@@ -336,6 +412,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				C5A0A752D40D957B7C79955C /* XCRemoteSwiftPackageReference "swift-markdown" */,
+				255BD5A45A6C3B5B5C55A729 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F7308DF003416E038756A307 /* Products */;
@@ -345,6 +422,7 @@
 				6D14167B1D61B6FB32D1340E /* PaperMD */,
 				256D065B575AB4E21794C1A0 /* PaperMDQuickLook */,
 				5369A063A354FA53BC8B4953 /* PaperMDTests */,
+				A9440ADBA1F7F419E449EEB5 /* PaperMDThumbnail */,
 			);
 		};
 /* End PBXProject section */
@@ -354,6 +432,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E05162C3FBEB3521F49CDD07 /* Assets.xcassets in Resources */,
+				1FEFFABAD79BFE3F7B3EC72D /* Sparkle.txt in Resources */,
 				9F9137A27E5EE21391CBFCE4 /* assets in Resources */,
 				78D4516F587A345B26238C7E /* index.html in Resources */,
 			);
@@ -392,6 +472,7 @@
 				2BCBF7348B1E72DB84671EFF /* DocumentSessionTests.swift in Sources */,
 				232E4905331BB60E13AEA79E /* MergeEngineTests.swift in Sources */,
 				6E4D77C0D502E886D4626CE6 /* WorkspaceItemTests.swift in Sources */,
+				D69F5CD6CE13BAFEBA5AF63C /* WorkspaceStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,9 +485,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		97EFD79573CB0821B6EE5CEC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				606A6B080FADE9AA0B8D4E60 /* ThumbnailProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		462FC88556BD2ED11007B682 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A9440ADBA1F7F419E449EEB5 /* PaperMDThumbnail */;
+			targetProxy = 1A6AC19FCD19DE88A3F81639 /* PBXContainerItemProxy */;
+		};
 		B51F47CE3D6C6B87DC969A58 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 256D065B575AB4E21794C1A0 /* PaperMDQuickLook */;
@@ -425,6 +519,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = QuickLook/QuickLook.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickLook/Info.plist;
@@ -435,6 +530,27 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.antonreinig.PaperMD.QuickLook;
 				PRODUCT_MODULE_NAME = PaperMDQuickLook;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		1C9FBB188C6E07D4A6F39740 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = QuickLookThumbnail/QuickLookThumbnail.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickLookThumbnail/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.antonreinig.PaperMD.Thumbnail;
+				PRODUCT_MODULE_NAME = PaperMDThumbnail;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 			};
@@ -476,7 +592,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8DTMQ4N2LA;
@@ -565,11 +681,33 @@
 			};
 			name = Release;
 		};
+		B29FFCD6E330C8C4352A1441 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = QuickLookThumbnail/QuickLookThumbnail.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickLookThumbnail/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.antonreinig.PaperMD.Thumbnail;
+				PRODUCT_MODULE_NAME = PaperMDThumbnail;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		B73DE59103C5585E14DEF7C8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = QuickLook/QuickLook.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickLook/Info.plist;
@@ -639,7 +777,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8DTMQ4N2LA;
@@ -669,6 +807,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3CBFFE2664D0A61C49740F3D /* Build configuration list for PBXNativeTarget "PaperMDThumbnail" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C9FBB188C6E07D4A6F39740 /* Debug */,
+				B29FFCD6E330C8C4352A1441 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		497FC3DD59B2A8F70A38A93F /* Build configuration list for PBXNativeTarget "PaperMDQuickLook" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -708,6 +855,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		255BD5A45A6C3B5B5C55A729 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.9.4;
+			};
+		};
 		C5A0A752D40D957B7C79955C /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/swiftlang/swift-markdown.git";
@@ -723,6 +878,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C5A0A752D40D957B7C79955C /* XCRemoteSwiftPackageReference "swift-markdown" */;
 			productName = Markdown;
+		};
+		A3B902821C656CD8E7C34BD7 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 255BD5A45A6C3B5B5C55A729 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
