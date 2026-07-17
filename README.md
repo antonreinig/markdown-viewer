@@ -2,94 +2,42 @@
 
 # paper.md
 
-### Markdown that behaves like a document.
+### Markdown that feels like a document.
 
-**Open, read, and edit Markdown without source code, preview modes, or an IDE.**
+**A native macOS editor for ordinary Markdown files — WYSIWYG, autosaved, offline, and safe to use alongside AI tools.**
 
 [![CI](https://github.com/antonreinig/paper.md/actions/workflows/ci.yml/badge.svg)](https://github.com/antonreinig/paper.md/actions/workflows/ci.yml)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-111111?logo=apple)
 [![GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
 
-[Features](#what-makes-papermd-different) · [Who it is for](#who-papermd-is-for) · [Build it](#build-it-yourself) · [Contribute](#contributing)
+[Why paper.md](#why-papermd) · [Build](#build-and-run) · [How it works](#how-it-works) · [Contribute](#contributing)
 
 </div>
 
 ---
 
-Markdown is one of the most portable document formats we have, yet opening a `.md` file still often feels like opening source code. Most tools make you edit raw syntax or switch between an editor and a separate preview.
+Open a `.md` file and edit the formatted document directly. There is no source mode, preview pane, import step, account, or proprietary format — just the Markdown already on disk.
 
-paper.md takes a document-first approach. Open a Markdown file and it is already beautifully rendered, immediately editable, and continuously saved as ordinary Markdown. Click anywhere and write, just as you would in a familiar document app.
+## Why paper.md
 
-> **Markdown is a file format, not a user interface.**
+- **Edit the document, not its syntax.** Headings, lists, links, code, and tables look finished while you edit them.
+- **Keep plain Markdown.** Files remain portable UTF-8 text and work with Git, scripts, and every other Markdown tool.
+- **Work safely alongside AI.** Changes from Codex and other local tools appear automatically; overlapping edits are surfaced instead of silently overwritten.
+- **Use a Mac app, not an IDE.** Browse folders in a native sidebar, use standard shortcuts and undo, and preview files in Finder with Quick Look.
+- **Stay private and offline.** No accounts, analytics, cloud services, remote scripts, or runtime network dependencies.
 
-## What makes paper.md different
+> **Early preview:** [Download paper.md 0.1.0](https://github.com/antonreinig/paper.md/releases/download/v0.1.0/paper.md-0.1.0.dmg) for Apple Silicon Macs running macOS 14 or newer.
 
-| The usual Markdown workflow | The paper.md workflow |
-| --- | --- |
-| Open raw source | Open a formatted document |
-| Switch to preview to read | Read and edit in the same surface |
-| See Markdown punctuation while writing | Use true WYSIWYG formatting |
-| Remember to save | Changes are saved continuously |
-| Manually reload AI-generated updates | External changes appear automatically |
-| Open an IDE for a folder of docs | Browse the folder in a calm, native Mac app |
+## Build and run
 
-paper.md is built around a few simple promises:
-
-- **True WYSIWYG editing.** Headings, lists, emphasis, links, code, and tables look like the finished document while you edit them.
-- **Plain Markdown underneath.** Your files remain readable, portable UTF-8 Markdown with no proprietary database or lock-in.
-- **Made for AI collaboration.** Local changes are saved after a short debounce, while edits from AI agents and other processes are detected and reloaded without silently overwriting your work.
-- **Workspace navigation.** Open a project folder and browse its Markdown documents in a familiar sidebar.
-- **Tables without the syntax puzzle.** Add and remove rows or columns directly from the document.
-- **Native macOS behavior.** Standard keyboard shortcuts, undo and redo, file associations, and Finder Quick Look previews are part of the experience.
-- **Private and offline.** There are no accounts, analytics, remote scripts, cloud services, or runtime network dependencies.
-
-## Who paper.md is for
-
-paper.md is for people who work with Markdown documents but do not want a developer tool between them and the content:
-
-- **Product managers** reviewing PRDs, specs, RFCs, meeting notes, and changelogs.
-- **Designers and researchers** working with design documentation, research notes, and AI-generated deliverables.
-- **Founders and AI power users** whose agents produce folders full of plans, reports, and working documents.
-- **Writers and technical collaborators** who value open files but prefer a direct, document-like editing experience.
-
-It is especially useful when an AI creates most of a document and a person wants to read it, correct a sentence, adjust a table, or continue writing without dropping into Markdown syntax.
-
-## AI and human, working on the same file
-
-The Markdown file on disk is always the source of truth. paper.md saves your typing continuously and watches the open document for changes from tools such as Codex or other local agents. Non-overlapping updates are merged; overlapping edits are surfaced as a conflict so neither version disappears.
-
-There is no import step, sync service, or special document format. The AI and paper.md simply work with the same file.
-
-## Current status
-
-paper.md is an early open-source macOS project. The current MVP includes:
-
-- native folder and file navigation
-- WYSIWYG Markdown editing
-- table row and column controls
-- live atomic saving
-- external-change detection and conflict protection
-- Finder Quick Look previews
-- undo, redo, and standard formatting shortcuts
-
-## Build it yourself
-
-### Requirements
-
-- Apple Silicon Mac
-- macOS 14 or newer
-- Xcode 26 or newer
-- Node.js 22 or newer
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen)
-
-### Build and run
+Requires an Apple Silicon Mac with macOS 14+, Xcode 26+, Node.js 22+, and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 ```sh
 ./scripts/bootstrap.sh
 open PaperMD.xcodeproj
 ```
 
-In Xcode, select the `PaperMD` scheme and run it. Run all automated checks with:
+Select the `PaperMD` scheme in Xcode and run it. To run all automated checks:
 
 ```sh
 ./scripts/test.sh
@@ -97,15 +45,15 @@ In Xcode, select the `PaperMD` scheme and run it. Run all automated checks with:
 
 ## How it works
 
-The native shell is built with SwiftUI and AppKit. A local `WKWebView` hosts the open-source Tiptap/ProseMirror editing engine. Swift owns filesystem access, workspace observation, atomic persistence, conflict handling, native commands, and Quick Look. All JavaScript is compiled into the app; the editing surface loads no remote content.
+Markdown on disk is always the source of truth. paper.md continuously saves local edits and watches the open file for external changes. Non-overlapping changes are merged; conflicts are shown so neither version disappears.
 
-The Developer ID build uses Hardened Runtime without App Sandbox so paper.md can work naturally with repository-style folders. The Quick Look extension remains sandboxed. Runtime networking is disabled by the editor's Content Security Policy, and the app contains no network client code.
+The app uses SwiftUI and AppKit, with a local `WKWebView` hosting Tiptap/ProseMirror. Swift handles files, workspace observation, atomic saves, conflict protection, native commands, and Quick Look. All JavaScript is bundled with the app and the editor loads no remote content.
 
-Read more in [the architecture documentation](docs/architecture.md).
+See [the architecture documentation](docs/architecture.md) and [Markdown compatibility notes](docs/markdown-compatibility.md) for details.
 
 ## Contributing
 
-Ideas, bug reports, design feedback, and code contributions are welcome. Please keep the central product principle intact: Markdown should feel like a document while remaining ordinary Markdown on disk.
+Ideas, bug reports, design feedback, and code contributions are welcome. Please preserve the central principle: Markdown should feel like a document while remaining ordinary Markdown on disk.
 
 ## License
 
