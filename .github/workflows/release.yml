@@ -71,7 +71,15 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Developer ID Application" \
             OTHER_CODE_SIGN_FLAGS="--timestamp"
-          codesign --verify --deep --strict --verbose=2 "$RUNNER_TEMP/PaperMD.xcarchive/Products/Applications/PaperMD.app"
+          APP_PATH="$RUNNER_TEMP/PaperMD.xcarchive/Products/Applications/PaperMD.app"
+          SPARKLE_PATH="$APP_PATH/Contents/Frameworks/Sparkle.framework"
+          codesign --force --timestamp --options runtime --sign "Developer ID Application" "$SPARKLE_PATH/Versions/B/XPCServices/Installer.xpc"
+          codesign --force --timestamp --options runtime --preserve-metadata=entitlements --sign "Developer ID Application" "$SPARKLE_PATH/Versions/B/XPCServices/Downloader.xpc"
+          codesign --force --timestamp --options runtime --sign "Developer ID Application" "$SPARKLE_PATH/Versions/B/Autoupdate"
+          codesign --force --timestamp --options runtime --sign "Developer ID Application" "$SPARKLE_PATH/Versions/B/Updater.app"
+          codesign --force --timestamp --options runtime --sign "Developer ID Application" "$SPARKLE_PATH"
+          codesign --force --timestamp --preserve-metadata=identifier,entitlements,requirements,flags,runtime --sign "Developer ID Application" "$APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
       - name: Create disk image
         run: |
